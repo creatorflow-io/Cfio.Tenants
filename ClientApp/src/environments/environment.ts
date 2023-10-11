@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
   tenantOptions:{
-    apiEndpoint: 'https://localhost:7079',
+    apiEndpoint: 'https://localhost:44313',
     apiVersion: '2'
   }
 };
