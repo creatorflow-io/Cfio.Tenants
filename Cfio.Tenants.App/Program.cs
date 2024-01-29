@@ -24,6 +24,8 @@ ConfigureDistributedCache(builder.Services, builder.Configuration);
 
 ConfigureSecurity(builder);
 
+ConfigureApiVersioning(builder);
+
 if (builder.Environment.IsDevelopment())
 {
     ConfigureSwagger(builder);
@@ -49,6 +51,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowKnownOrigins");
+
+app.MapGet("/app", async context => { context.Response.Redirect("/app/index.html"); });
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -152,9 +156,8 @@ static void ConfigureOrigins(WebApplicationBuilder builder)
     });
 }
 
-static void ConfigureSwagger(WebApplicationBuilder builder)
+static void ConfigureApiVersioning(WebApplicationBuilder builder)
 {
-
     builder.Services.AddApiVersioning(setup =>
     {
         setup.DefaultApiVersion = new ApiVersion(2, 0);
@@ -167,7 +170,10 @@ static void ConfigureSwagger(WebApplicationBuilder builder)
         setup.GroupNameFormat = "'v'VVV";
         setup.SubstituteApiVersionInUrl = true;
     });
+}
 
+static void ConfigureSwagger(WebApplicationBuilder builder)
+{
     builder.Services.ConfigureSwaggerApiOptions(builder.Configuration.GetSection("Api"));
     builder.Services.AddSwaggerGen(c =>
     {

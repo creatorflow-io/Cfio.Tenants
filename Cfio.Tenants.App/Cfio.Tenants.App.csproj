@@ -4,12 +4,21 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <SpaRoot>..\ClientApp\</SpaRoot>
-    <SpaProxyServerUrl>https://localhost:44491</SpaProxyServerUrl>
+    <SpaRoot Condition="$(SpaRoot)==''">..\ClientApp\</SpaRoot>
+    <SpaProxyServerUrl Condition="$(SpaProxyServerUrl)==''">https://localhost:44491</SpaProxyServerUrl>
     <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>cfio.tenants.app</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <EnableSdkContainerSupport>true</EnableSdkContainerSupport>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="obj\**" />
+    <Content Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="7.0.8" />
@@ -29,6 +38,7 @@
     <PackageReference Include="Juice.MediatR.RequestManager.EF.PostgreSQL" Version="$(JuiceRefVersion)" />
     <PackageReference Include="Juice.MediatR.RequestManager.EF.SqlServer" Version="$(JuiceRefVersion)" />
     <PackageReference Include="Juice.MultiTenant.Api" Version="$(JuiceRefVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.2" />
   </ItemGroup>
 
 
@@ -51,7 +61,7 @@
     <ItemGroup>
       <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**" />
       <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
-        <RelativePath>wwwroot\%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <RelativePath>wwwroot\app\%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </ResolvedFileToPublish>
