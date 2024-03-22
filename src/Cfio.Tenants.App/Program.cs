@@ -1,20 +1,29 @@
-﻿using Juice.AspNetCore.Mvc.Formatters;
+﻿using System.Security.Claims;
+using System.Text.Json;
+using Juice.AspNetCore.Mvc.Formatters;
 using Juice.EventBus.RabbitMQ;
 using Juice.Extensions.Swagger;
 using Juice.MultiTenant;
 using Juice.MultiTenant.Api;
 using Juice.MultiTenant.Domain.AggregatesModel.TenantAggregate;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Writers;
 using Newtonsoft.Json.Converters;
+using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-
-ConfigureMultiTenant(builder);
 
 ConfigureGRPC(builder.Services);
 
@@ -30,6 +39,8 @@ if (builder.Environment.IsDevelopment())
 {
     ConfigureSwagger(builder);
 }
+
+ConfigureMultiTenant(builder);
 
 ConfigureOrigins(builder);
 
@@ -51,8 +62,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowKnownOrigins");
-
-app.MapGet("/app", async context => { context.Response.Redirect("/app/index.html"); });
+app.UseMultiTenant();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -86,6 +96,11 @@ static void ConfigureMultiTenant(WebApplicationBuilder builder)
         options.Schema = "App";
     }).WithBasePathStrategy(options => options.RebaseAspNetCorePathBase = true)
     .WithRouteStrategy()
+    .WithPerTenantOptions<JwtBearerOptions>((options, tc) =>
+    {
+        var authority = builder.Configuration.GetSection("OpenIdConnect:Authority").Get<string>();
+        options.Authority = GetAuthority(authority, tc);
+    })
     ;
 
     builder.Services.AddTenantIntegrationEventSelfHandlers<Tenant>();
@@ -123,21 +138,25 @@ static void ConfigureDistributedCache(IServiceCollection services, IConfiguratio
 
 static void ConfigureSecurity(WebApplicationBuilder builder)
 {
+    builder.Services.AddScoped<IClaimsTransformation, ClaimsTransformer>();
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = builder.Configuration.GetSection("OpenIdConnect:Authority").Get<string>();
-        options.Audience = builder.Configuration.GetSection("OpenIdConnect:Audience").Get<string?>();
-        options.RequireHttpsMetadata = false;
-    });
+    .AddJwtBearer(
+        options =>
+        {
+            options.Authority = GetAuthority(builder.Configuration.GetSection("OpenIdConnect:Authority").Get<string>(), default);
+            options.Audience = builder.Configuration.GetSection("OpenIdConnect:Audience").Get<string?>();
+            options.RequireHttpsMetadata = false;
+        }
+    );
+    builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, JwtBearerPostConfigureOptions>());
 
-    if (builder.Environment.IsDevelopment())
+    if (true || !builder.Environment.IsDevelopment())
     {
-        builder.Services.AddTenantAuthorizationTest();
+        builder.Services.AddTenantAuthorizationDefault();
     }
     else
     {
-        builder.Services.AddTenantAuthorizationDefault();
+        builder.Services.AddTenantAuthorizationTest();
     }
 }
 
@@ -172,21 +191,19 @@ static void ConfigureApiVersioning(WebApplicationBuilder builder)
     });
 }
 
+
+static string GetAuthority(string configuredAuthority, ITenant? tenant)
+{
+    return configuredAuthority
+        .Replace('/' + Constants.TenantToken, !string.IsNullOrEmpty(tenant?.Identifier) ? '/' + tenant.Identifier : "");
+}
+
 static void ConfigureSwagger(WebApplicationBuilder builder)
 {
     builder.Services.ConfigureSwaggerApiOptions(builder.Configuration.GetSection("Api"));
-    builder.Services.AddSwaggerGen(c =>
-    {
-        c.IgnoreObsoleteActions();
 
-        c.IgnoreObsoleteProperties();
-
-        c.SchemaFilter<SwaggerIgnoreFilter>();
-
-        c.UseInlineDefinitionsForEnums();
-
-        c.DescribeAllParametersInCamelCase();
-
+    builder.Services.AddPerTenantSwaggerGen<ITenant>((c, tc) => {
+        var authority = GetAuthority(builder.Configuration.GetSection("OpenIdConnect:Authority").Get<string>(), tc);
         c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
         {
             Type = SecuritySchemeType.OAuth2,
@@ -194,8 +211,8 @@ static void ConfigureSwagger(WebApplicationBuilder builder)
             {
                 AuthorizationCode = new OpenApiOAuthFlow
                 {
-                    AuthorizationUrl = new Uri(builder.Configuration.GetSection("OpenIdConnect:Authority").Get<string>() + "/connect/authorize"),
-                    TokenUrl = new Uri(builder.Configuration.GetSection("OpenIdConnect:Authority").Get<string>() + "/connect/token"),
+                    AuthorizationUrl = new Uri(authority + "/connect/authorize"),
+                    TokenUrl = new Uri(authority + "/connect/token"),
                     Scopes = new Dictionary<string, string>
                     {
                         { "openid", "OpenId" },
@@ -206,16 +223,16 @@ static void ConfigureSwagger(WebApplicationBuilder builder)
             },
             Scheme = "Bearer"
         });
+        c.IgnoreObsoleteActions();
 
-        c.OperationFilter<AuthorizeCheckOperationFilter>();
-        c.OperationFilter<ReApplyOptionalRouteParameterOperationFilter>();
-        c.DocumentFilter<TenantDocsFilter>();
-    });
+        c.IgnoreObsoleteProperties();
 
-    builder.Services.AddSwaggerGenNewtonsoftSupport();
+        c.SchemaFilter<SwaggerIgnoreFilter>();
 
-    builder.Services.ConfigureSwaggerGen(c =>
-    {
+        c.UseInlineDefinitionsForEnums();
+
+        c.DescribeAllParametersInCamelCase();
+
         c.SwaggerDoc("v1", new OpenApiInfo
         {
             Version = "v1",
@@ -231,7 +248,13 @@ static void ConfigureSwagger(WebApplicationBuilder builder)
         });
 
         c.IncludeReferencedXmlComments();
+
+        c.OperationFilter<AuthorizeCheckOperationFilter>();
+        c.OperationFilter<ReApplyOptionalRouteParameterOperationFilter>();
+        c.DocumentFilter<TenantDocsFilter>();
     });
+
+    builder.Services.AddSwaggerGenNewtonsoftSupport();
 
 }
 
@@ -248,4 +271,14 @@ static void UseTenantSwagger(WebApplication app)
         c.OAuthAppName("Tenants API Swagger UI");
         c.OAuthUsePkce();
     });
+}
+
+class ClaimsTransformer : IClaimsTransformation
+{
+    public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+    {
+        var identity = (ClaimsIdentity)principal.Identity;
+        identity.AddClaim(new Claim("newClaim", "newValue"));
+        return Task.FromResult(principal);
+    }
 }

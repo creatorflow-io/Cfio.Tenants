@@ -1,0 +1,1 @@
+docker image tag cfiotenantsinternalhost:dev ductrantb/cfiotenantsinternalhost:dev &&  docker image push ductrantb/cfiotenantsinternalhost:dev

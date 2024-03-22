@@ -5,8 +5,22 @@
 export const environment = {
   production: false,
   tenantOptions:{
-    apiEndpoint: 'https://localhost:44313',
+    apiEndpoint: 'https://host.docker.internal:44314',
     apiVersion: '2'
+  },
+  auth: {
+    issuer: 'https://host.docker.internal:44316',
+    redirectUri: 'https://localhost:4200/auth/login-completed',
+    postLogoutRedirectUri: 'https://localhost:4200/auth/logout-completed',
+    clientId: 'tenants_admin',
+    responseType: 'code',
+    scope: 'openid profile roles tenants-api',
+    basePath : 'https://localhost:4200/auth',
+  },
+  layout:{
+    brand: "cfio",
+    defaultMenuOpen: true,
+    userImageUrl: "https://i.pravatar.cc/300"//"https://host.docker.internal:44316/Account/Auth/ProfileImage?username={username}"
   }
 };
 

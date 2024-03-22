@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  cfio.tenants.internalhost:
+    image: ${DOCKER_REGISTRY-}cfiotenantsinternalhost
+    build:
+      context: .
+      dockerfile: src/Cfio.Tenants.InternalHost/Dockerfile
+
+  cfio.tenants.app:
+    image: ${DOCKER_REGISTRY-}cfiotenantsapp
+    build:
+      context: .
+      dockerfile: src/Cfio.Tenants.App/Dockerfile
+

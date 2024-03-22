@@ -3,12 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cfio.Tenants.App", "Cfio.Tenants.App\Cfio.Tenants.App.csproj", "{E03DF5FD-1258-4146-9B1C-18EB0BFA7578}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9F3B86F1-DF61-41FF-95F8-7CA71B42DAF7}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cfio.Tenants.InternalHost", "src\Cfio.Tenants.InternalHost\Cfio.Tenants.InternalHost.csproj", "{CFB339B8-2AFA-4D1B-BE43-D02B2C1B6411}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CCC80C9F-56C4-4FAB-A84E-AB9C17A521F3}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{92FE7DC1-3C77-4CF9-960D-5B108B2349A4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cfio.Tenants.App", "src\Cfio.Tenants.App\Cfio.Tenants.App.csproj", "{3E4D6DF8-2C66-4537-98BE-4AD4E377771A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,13 +22,25 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E03DF5FD-1258-4146-9B1C-18EB0BFA7578}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E03DF5FD-1258-4146-9B1C-18EB0BFA7578}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E03DF5FD-1258-4146-9B1C-18EB0BFA7578}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E03DF5FD-1258-4146-9B1C-18EB0BFA7578}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFB339B8-2AFA-4D1B-BE43-D02B2C1B6411}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFB339B8-2AFA-4D1B-BE43-D02B2C1B6411}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFB339B8-2AFA-4D1B-BE43-D02B2C1B6411}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFB339B8-2AFA-4D1B-BE43-D02B2C1B6411}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92FE7DC1-3C77-4CF9-960D-5B108B2349A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92FE7DC1-3C77-4CF9-960D-5B108B2349A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92FE7DC1-3C77-4CF9-960D-5B108B2349A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92FE7DC1-3C77-4CF9-960D-5B108B2349A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E4D6DF8-2C66-4537-98BE-4AD4E377771A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E4D6DF8-2C66-4537-98BE-4AD4E377771A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E4D6DF8-2C66-4537-98BE-4AD4E377771A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E4D6DF8-2C66-4537-98BE-4AD4E377771A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CFB339B8-2AFA-4D1B-BE43-D02B2C1B6411} = {CCC80C9F-56C4-4FAB-A84E-AB9C17A521F3}
+		{3E4D6DF8-2C66-4537-98BE-4AD4E377771A} = {CCC80C9F-56C4-4FAB-A84E-AB9C17A521F3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5A2C0E3E-04E7-4D62-8871-AC4716474ADF}
