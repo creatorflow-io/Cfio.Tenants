@@ -1,0 +1,1 @@
+docker image tag cfiotenantsapi:dev ductrantb/cfiotenantsapi:dev &&  docker image push ductrantb/cfiotenantsapi:dev
