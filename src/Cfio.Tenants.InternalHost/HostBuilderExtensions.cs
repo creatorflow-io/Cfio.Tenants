@@ -3,6 +3,7 @@ using Juice.EF;
 using Juice.MultiTenant.EF;
 using Juice.MultiTenant;
 using Juice.Services;
+using Finbuckle.MultiTenant.Abstractions;
 
 namespace Cfio.Tenants.InternalHost
 {
@@ -16,7 +17,7 @@ namespace Cfio.Tenants.InternalHost
         /// <para></para>TenantSettings
         /// </summary>
         /// <returns></returns>
-        public static FinbuckleMultiTenantBuilder<TTenantInfo> ConfigureTenantGrpcHost<TTenantInfo>(this FinbuckleMultiTenantBuilder<TTenantInfo> builder,
+        public static MultiTenantBuilder<TTenantInfo> ConfigureTenantGrpcHost<TTenantInfo>(this MultiTenantBuilder<TTenantInfo> builder,
             IConfiguration configuration,
             Action<DbOptions> configureTenantDb)
             where TTenantInfo : class, ITenant, ITenantInfo, new()

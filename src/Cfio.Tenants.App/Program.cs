@@ -19,6 +19,7 @@ using Microsoft.OpenApi.Writers;
 using Newtonsoft.Json.Converters;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Finbuckle.MultiTenant;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,12 +97,17 @@ static void ConfigureMultiTenant(WebApplicationBuilder builder)
         options.Schema = "App";
     }).WithBasePathStrategy(options => options.RebaseAspNetCorePathBase = true)
     .WithRouteStrategy()
-    .WithPerTenantOptions<JwtBearerOptions>((options, tc) =>
+    ;
+
+    builder.Services.ConfigureAllPerTenant<JwtBearerOptions, Juice.MultiTenant.TenantInfo>((options, tc) =>
     {
         var authority = builder.Configuration.GetSection("OpenIdConnect:Authority").Get<string>();
+        if (authority == null)
+        {
+            throw new InvalidOperationException("OpenIdConnect:Authority is required in appsettings.json");
+        }
         options.Authority = GetAuthority(authority, tc);
-    })
-    ;
+    });
 
     builder.Services.AddTenantIntegrationEventSelfHandlers<Tenant>();
 
@@ -200,7 +206,7 @@ static string GetAuthority(string configuredAuthority, ITenant? tenant)
 
 static void ConfigureSwagger(WebApplicationBuilder builder)
 {
-    builder.Services.ConfigureSwaggerApiOptions(builder.Configuration.GetSection("Api"));
+    //builder.Services.ConfigureSwaggerApiOptions(builder.Configuration.GetSection("Api"));
 
     builder.Services.AddPerTenantSwaggerGen<ITenant>((c, tc) => {
         var authority = GetAuthority(builder.Configuration.GetSection("OpenIdConnect:Authority").Get<string>(), tc);

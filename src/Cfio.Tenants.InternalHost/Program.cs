@@ -1,4 +1,5 @@
-using Cfio.Tenants.InternalHost;
+﻿using Cfio.Tenants.InternalHost;
+using Finbuckle.MultiTenant;
 using Juice.EventBus.RabbitMQ;
 using Juice.MultiTenant;
 using Juice.MultiTenant.Api;
